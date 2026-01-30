@@ -9,27 +9,22 @@
         .header { text-align: center; margin-top: 30px; }
         .lvl-text { font-size: 3.5rem; font-weight: 900; color: #00f9ff; text-shadow: 0 0 20px #00f9ff; margin: 0; }
         .rank-text { font-size: 1.5rem; margin-top: 10px; border-bottom: 2px solid #00f9ff; display: inline-block; padding: 0 20px; }
-        
         .daily-mission { background: rgba(0, 0, 0, 0.7); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; margin: 30px 0; box-shadow: 0 0 15px #00f9ff66; }
         .mission-title { color: #00f9ff; border-bottom: 1px solid #00f9ff44; padding-bottom: 10px; margin-bottom: 15px; }
         .mission-item { display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.95rem; }
-
         .stats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 95%; max-width: 1000px; padding-bottom: 50px; }
-        .stat-card { background: rgba(0, 0, 0, 0.8); border: 2px solid #00f9ff; border-radius: 12px; padding: 20px; width: 160px; text-align: center; box-shadow: 0 0 10px #00f9ff33; transition: 0.3s; }
-        .stat-name { font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .stat-card { background: rgba(0, 0, 0, 0.8); border: 2px solid #00f9ff; border-radius: 12px; padding: 20px; width: 160px; text-align: center; box-shadow: 0 0 10px #00f9ff33; }
+        .stat-name { font-size: 1.1rem; margin-bottom: 10px; }
         .stat-rank { font-size: 2.2rem; font-weight: bold; color: #00f9ff; margin: 5px 0; }
         .exp-text { font-size: 0.8rem; color: #ccc; margin-bottom: 15px; }
-        
-        .controls { display: flex; justify-content: center; gap: 10px; }
-        .btn { background: #00f9ff; color: black; border: none; border-radius: 5px; width: 35px; height: 35px; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
-        .btn:active { transform: scale(0.9); }
-        .sync-info { font-size: 0.7rem; color: #00ff88; margin-top: 5px; opacity: 0.7; }
+        .btn { background: #00f9ff; color: black; border: none; border-radius: 5px; width: 35px; height: 35px; font-weight: bold; cursor: pointer; }
+        .sync-status { font-size: 0.7rem; color: #ffcc00; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="sync-msg" style="font-size: 0.7rem;">جاري المزامنة...</div>
+        <div id="sync-msg" class="sync-status">جاري التحقق من المزامنة...</div>
         <h1 class="lvl-text">LEVEL: <span id="main-lvl">1</span></h1>
         <div class="rank-text">الرتبة العامة: F</div>
     </div>
@@ -42,13 +37,11 @@
         <div class="mission-item"><span>▶ جري (Running)</span> <span>5 كم</span></div>
     </div>
 
-    <div class="stats-grid" id="grid">
-        </div>
+    <div class="stats-grid" id="grid"></div>
 
     <script>
-        // --- إعدادات المزامنة ---
-        // استبدل الرابط أدناه بالرابط الذي نسخته من Firebase وأضف في نهايته /.json
-        const FIREBASE_URL = https://mysystem-57a1c-default-rtdb.firebaseio.com//.json"
+        // اترك هذا فارغاً الآن ليعمل النظام فوراً، وعندما تجهز رابط Firebase ضعه هنا
+        const FIREBASE_URL = ""; 
 
         const statConfigs = [
             { key: 'str', name: '💪 القوة' },
@@ -58,30 +51,23 @@
             { key: 'per', name: '👁️ الإدراك' }
         ];
 
-        async function syncLoad() {
-            try {
-                const res = await fetch(FIREBASE_URL);
-                const data = await res.json();
-                if (data) {
-                    Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
-                    document.getElementById('sync-msg').innerText = "متصل بالسحابة ✓";
+        async function init() {
+            if (FIREBASE_URL && FIREBASE_URL.startsWith("http")) {
+                try {
+                    const res = await fetch(FIREBASE_URL + "/.json");
+                    const data = await res.json();
+                    if (data) {
+                        Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+                        document.getElementById('sync-msg').innerText = "متصل سحابياً ✓";
+                        document.getElementById('sync-msg').style.color = "#00ff88";
+                    }
+                } catch (e) {
+                    document.getElementById('sync-msg').innerText = "تعذر الاتصال (يعمل محلياً)";
                 }
-                render();
-            } catch (e) {
-                document.getElementById('sync-msg').innerText = "وضع الأوفلاين";
-                render();
+            } else {
+                document.getElementById('sync-msg').innerText = "المزامنة غير مفعلة (ضع الرابط)";
             }
-        }
-
-        async function syncSave(key, val) {
-            localStorage.setItem(key, val);
             render();
-            try {
-                await fetch(FIREBASE_URL.replace('.json', `/data/${key}.json`), {
-                    method: 'PUT',
-                    body: JSON.stringify(val)
-                });
-            } catch (e) { console.error("فشل الحفظ السحابي"); }
         }
 
         function render() {
@@ -97,7 +83,7 @@
                         <div class="stat-name">${s.name}</div>
                         <div class="stat-rank">F</div>
                         <div class="exp-text">نقاط الخبرة: ${val}</div>
-                        <div class="controls">
+                        <div>
                             <button class="btn" onclick="change('${s.key}', -1)">-</button>
                             <button class="btn" onclick="change('${s.key}', 1)">+</button>
                         </div>
@@ -107,12 +93,21 @@
             document.getElementById('main-lvl').innerText = Math.floor(total / 10) + 1;
         }
 
-        function change(key, amt) {
+        async function change(key, amt) {
             let current = parseInt(localStorage.getItem(key)) || 0;
-            syncSave(key, Math.max(0, current + amt));
+            let newVal = Math.max(0, current + amt);
+            localStorage.setItem(key, newVal);
+            render();
+
+            if (FIREBASE_URL && FIREBASE_URL.startsWith("http")) {
+                fetch(FIREBASE_URL + `/data/${key}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(newVal)
+                }).catch(e => console.log("خطأ حفظ"));
+            }
         }
 
-        window.onload = syncLoad;
+        window.onload = init;
     </script>
 </body>
 </html>
