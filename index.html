@@ -1,83 +1,118 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام الارتقاء الذاتي | المزامنة السحابية</title>
-  <style>
-    /* واجهتك المفضلة */
-    body { background: linear-gradient(to bottom right, #000428, #004e92); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; direction: rtl; text-align: center; }
-    .container { padding: 20px; }
-    .level-text { font-size: 3.5em; font-weight: bold; color: #00f9ff; text-shadow: 0 0 20px #00f9ff; }
-    .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; }
-    .category { background: rgba(0, 0, 0, 0.6); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; min-width: 180px; }
-    .stat-rank { font-size: 2em; color: #00f9ff; font-weight: bold; }
-    .btn { padding: 10px; border: none; border-radius: 5px; background: #00f9ff; cursor: pointer; margin: 5px; font-weight: bold; }
-    .sync-text { font-size: 0.8em; color: #00ff88; margin-bottom: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الارتقاء الذاتي</title>
+    <style>
+        body { background: radial-gradient(circle at center, #001529, #000000); color: white; font-family: 'Segoe UI', sans-serif; direction: rtl; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; margin-top: 30px; }
+        .lvl-text { font-size: 3.5rem; font-weight: 900; color: #00f9ff; text-shadow: 0 0 20px #00f9ff; margin: 0; }
+        .rank-text { font-size: 1.5rem; margin-top: 10px; border-bottom: 2px solid #00f9ff; display: inline-block; padding: 0 20px; }
+        
+        .daily-mission { background: rgba(0, 0, 0, 0.7); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; margin: 30px 0; box-shadow: 0 0 15px #00f9ff66; }
+        .mission-title { color: #00f9ff; border-bottom: 1px solid #00f9ff44; padding-bottom: 10px; margin-bottom: 15px; }
+        .mission-item { display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.95rem; }
+
+        .stats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 95%; max-width: 1000px; padding-bottom: 50px; }
+        .stat-card { background: rgba(0, 0, 0, 0.8); border: 2px solid #00f9ff; border-radius: 12px; padding: 20px; width: 160px; text-align: center; box-shadow: 0 0 10px #00f9ff33; transition: 0.3s; }
+        .stat-name { font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .stat-rank { font-size: 2.2rem; font-weight: bold; color: #00f9ff; margin: 5px 0; }
+        .exp-text { font-size: 0.8rem; color: #ccc; margin-bottom: 15px; }
+        
+        .controls { display: flex; justify-content: center; gap: 10px; }
+        .btn { background: #00f9ff; color: black; border: none; border-radius: 5px; width: 35px; height: 35px; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+        .btn:active { transform: scale(0.9); }
+        .sync-info { font-size: 0.7rem; color: #00ff88; margin-top: 5px; opacity: 0.7; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div id="sync-status" class="sync-text">جاري الاتصال بالسحابة...</div>
-    <div class="level-text">LEVEL: <span id="lvl">1</span></div>
-    <div style="font-size: 1.2em; margin-bottom: 20px;">الرتبة العامة: <span id="rank">F</span></div>
 
-    <div class="grid" id="stats-container"></div>
-  </div>
+    <div class="header">
+        <div id="sync-msg" style="font-size: 0.7rem;">جاري المزامنة...</div>
+        <h1 class="lvl-text">LEVEL: <span id="main-lvl">1</span></h1>
+        <div class="rank-text">الرتبة العامة: F</div>
+    </div>
 
-  <script>
-    // ضع رابط Firebase الخاص بك هنا (الذي ينتهي بـ .firebaseio.com)
-    const DB_URL = https://mysystem-b9583-default-rtdb.firebaseio.com/.json";
+    <div class="daily-mission">
+        <div class="mission-title">المهمة اليومية: استعداد للقوة</div>
+        <div class="mission-item"><span>▶ ضغط (Push-ups)</span> <span>50 مرة</span></div>
+        <div class="mission-item"><span>▶ معدة (Sit-ups)</span> <span>50 مرة</span></div>
+        <div class="mission-item"><span>▶ سكوات (Squats)</span> <span>50 مرة</span></div>
+        <div class="mission-item"><span>▶ جري (Running)</span> <span>5 كم</span></div>
+    </div>
 
-    const properties = [
-      { key: "str", name: "القوة" }, { key: "agi", name: "الرشاقة" },
-      { key: "vit", name: "الحيوية" }, { key: "int", name: "الذكاء" },
-      { key: "per", name: "الإدراك" }
-    ];
+    <div class="stats-grid" id="grid">
+        </div>
 
-    async function load() {
-      try {
-        const res = await fetch(`${DB_URL}/data.json`);
-        const cloudData = await res.json();
-        if(cloudData) {
-          Object.keys(cloudData).forEach(k => localStorage.setItem(k, cloudData[k]));
-          document.getElementById('sync-status').textContent = "متصل بالسحابة ✓";
+    <script>
+        // --- إعدادات المزامنة ---
+        // استبدل الرابط أدناه بالرابط الذي نسخته من Firebase وأضف في نهايته /.json
+        const FIREBASE_URL = https://mysystem-57a1c-default-rtdb.firebaseio.com//.json"
+
+        const statConfigs = [
+            { key: 'str', name: '💪 القوة' },
+            { key: 'agi', name: '🏃 الرشاقة' },
+            { key: 'vit', name: '🔥 الحيوية' },
+            { key: 'int', name: '🧠 الذكاء' },
+            { key: 'per', name: '👁️ الإدراك' }
+        ];
+
+        async function syncLoad() {
+            try {
+                const res = await fetch(FIREBASE_URL);
+                const data = await res.json();
+                if (data) {
+                    Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+                    document.getElementById('sync-msg').innerText = "متصل بالسحابة ✓";
+                }
+                render();
+            } catch (e) {
+                document.getElementById('sync-msg').innerText = "وضع الأوفلاين";
+                render();
+            }
         }
-        render();
-      } catch(e) { document.getElementById('sync-status').textContent = "وضع الأوفلاين"; render(); }
-    }
 
-    async function save(key, val) {
-      localStorage.setItem(key, val);
-      render();
-      await fetch(`${DB_URL}/data/${key}.json`, { method: 'PUT', body: JSON.stringify(val) });
-    }
+        async function syncSave(key, val) {
+            localStorage.setItem(key, val);
+            render();
+            try {
+                await fetch(FIREBASE_URL.replace('.json', `/data/${key}.json`), {
+                    method: 'PUT',
+                    body: JSON.stringify(val)
+                });
+            } catch (e) { console.error("فشل الحفظ السحابي"); }
+        }
 
-    function render() {
-      const container = document.getElementById('stats-container');
-      container.innerHTML = '';
-      let total = 0;
-      properties.forEach(p => {
-        const val = parseInt(localStorage.getItem(p.key)) || 0;
-        total += val;
-        container.innerHTML += `
-          <div class="category">
-            <div>${p.name}</div>
-            <div class="stat-rank">${val}</div>
-            <button class="btn" onclick="updateStat('${p.key}', 1)">+</button>
-            <button class="btn" onclick="updateStat('${p.key}', -1)">-</button>
-          </div>
-        `;
-      });
-      document.getElementById('lvl').textContent = Math.floor(total / 10) + 1;
-    }
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            let total = 0;
 
-    function updateStat(k, a) {
-      let v = (parseInt(localStorage.getItem(k)) || 0) + a;
-      save(k, Math.max(0, v));
-    }
+            statConfigs.forEach(s => {
+                const val = parseInt(localStorage.getItem(s.key)) || 0;
+                total += val;
+                grid.innerHTML += `
+                    <div class="stat-card">
+                        <div class="stat-name">${s.name}</div>
+                        <div class="stat-rank">F</div>
+                        <div class="exp-text">نقاط الخبرة: ${val}</div>
+                        <div class="controls">
+                            <button class="btn" onclick="change('${s.key}', -1)">-</button>
+                            <button class="btn" onclick="change('${s.key}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('main-lvl').innerText = Math.floor(total / 10) + 1;
+        }
 
-    window.onload = load;
-  </script>
+        function change(key, amt) {
+            let current = parseInt(localStorage.getItem(key)) || 0;
+            syncSave(key, Math.max(0, current + amt));
+        }
+
+        window.onload = syncLoad;
+    </script>
 </body>
 </html>
