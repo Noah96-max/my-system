@@ -3,283 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>نظام الارتقاء الذاتي | SOLO LEVELING</title>
+  <title>نظام الارتقاء الذاتي | المزامنة السحابية</title>
   <style>
-    body {
-      background: linear-gradient(to bottom right, #000428, #004e92);
-      color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      direction: rtl;
-    }
-
-    /* رسالة الترحيب */
-    #welcome-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      transition: opacity 0.8s ease;
-    }
-
-    .modal-content {
-      background: #000;
-      border: 3px solid #00f9ff;
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
-      max-width: 450px;
-      box-shadow: 0 0 60px #00f9ff44;
-      animation: systemPopup 0.7s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-    }
-
-    @keyframes systemPopup {
-      0% { transform: scale(0.7); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .modal-title { color: #ffea00; font-size: 1.8em; margin-bottom: 20px; text-shadow: 0 0 15px #ffea00; font-weight: bold; }
-    .modal-text { color: #00f9ff; line-height: 1.8; margin-bottom: 30px; font-size: 1.2em; direction: rtl; unicode-bidi: embed; }
-
-    /* الهيكل الرئيسي */
-    .container { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    .status-header { text-align: center; margin-bottom: 30px; }
-    .level-text { font-size: 4em; font-weight: bold; color: #00f9ff; text-shadow: 0 0 25px #00f9ff; margin: 0; }
-    .general-rank { font-size: 1.8em; margin-top: 5px; font-weight: bold; }
-
-    .xp-container {
-      width: 300px; height: 12px; background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px; margin: 15px 0; overflow: hidden; border: 1px solid #00f9ff44;
-    }
-    .xp-bar { height: 100%; background: linear-gradient(to right, #00f9ff, #004e92); width: 0%; transition: width 0.6s ease; }
-
-    /* لوحة المهام */
-    .quest-panel {
-      background: rgba(0, 0, 0, 0.75); border: 2px solid #00f9ff;
-      border-radius: 15px; padding: 25px; width: 100%; max-width: 550px;
-      margin-bottom: 40px; box-shadow: 0 0 25px #00f9ff33;
-    }
-    .quest-title { font-size: 1.6em; color: #00f9ff; border-bottom: 2px solid #00f9ff; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .timer { color: #ffea00; font-family: 'Courier New', monospace; direction: ltr; }
-    .quest-list { list-style: none; padding: 0; font-size: 1.2em; }
-    .quest-list li { margin: 12px 0; padding-right: 30px; position: relative; text-align: right; }
-    .quest-list li::before { content: "▶"; position: absolute; right: 0; color: #00f9ff; font-size: 0.8em; top: 4px; }
-
-    /* شبكة الخصائص المعدلة لتكون على خط واحد */
-    .grid { 
-      display: flex; 
-      flex-direction: row; 
-      justify-content: center; 
-      gap: 15px; 
-      width: 100%; 
-      max-width: 1200px; 
-      overflow-x: auto; /* يسمح بالتمرير إذا ضاقت الشاشة */
-      padding: 20px 10px;
-    }
-    
-    .category { 
-      flex: 1; /* تجعل جميع المربعات تتساوى في الحجم */
-      min-width: 180px; /* تضمن عدم صغر المربع بشكل يشوه المحتوى */
-      background: rgba(0, 0, 0, 0.5); 
-      border: 2px solid #ffffff15; 
-      border-radius: 20px; 
-      padding: 20px 10px;
-      text-align: center; 
-      transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    
-    .category:hover { transform: translateY(-8px); }
-    .category-title { font-size: 1.3em; color: #fff; margin-bottom: 5px; opacity: 0.9; }
-    
-    .stat-rank-display {
-      font-size: 2.2em;
-      font-weight: 900;
-      margin-bottom: 10px;
-      text-shadow: 0 0 15px currentColor;
-      font-family: 'Arial Black', sans-serif;
-    }
-    
-    .category-points { font-size: 1em; color: #ccc; margin-bottom: 15px; }
-
-    .btn { padding: 8px 15px; border: none; border-radius: 12px; background: #00f9ff; color: #000; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.2s; }
-    .btn:hover { background: #fff; box-shadow: 0 0 15px #00f9ff; }
-    .btn-complete { background: #00ff88; width: 100%; font-size: 1.2em; margin-top: 20px; }
-    
-    .penalty-mode { border-color: #ff0000 !important; box-shadow: 0 0 30px #ff000044 !important; background: rgba(50, 0, 0, 0.9) !important; }
-    .btn-penalty { background: #ff0000; color: white; }
-
-    /* إخفاء شريط التمرير لمظهر أفضل */
-    .grid::-webkit-scrollbar { display: none; }
-    .grid { -ms-overflow-style: none; scrollbar-width: none; }
+    /* واجهتك المفضلة */
+    body { background: linear-gradient(to bottom right, #000428, #004e92); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; direction: rtl; text-align: center; }
+    .container { padding: 20px; }
+    .level-text { font-size: 3.5em; font-weight: bold; color: #00f9ff; text-shadow: 0 0 20px #00f9ff; }
+    .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; }
+    .category { background: rgba(0, 0, 0, 0.6); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; min-width: 180px; }
+    .stat-rank { font-size: 2em; color: #00f9ff; font-weight: bold; }
+    .btn { padding: 10px; border: none; border-radius: 5px; background: #00f9ff; cursor: pointer; margin: 5px; font-weight: bold; }
+    .sync-text { font-size: 0.8em; color: #00ff88; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-
-  <div id="welcome-modal">
-    <div class="modal-content">
-      <div class="modal-title">⚠ تنبيه من النظام</div>
-      <div class="modal-text">
-        لقد تم تسجيلك كـ "لاعب" في نظام الارتقاء الذاتي.<br><br>
-        أمامك فرصة واحدة للارتقاء من الرتبة <span dir="ltr">F</span> إلى الرتبة <span dir="ltr">S</span>.<br><br>
-        <b>هل تقبل المهمة؟</b>
-      </div>
-      <button class="btn btn-complete" onclick="closeModal()">أقبل التحدي</button>
-    </div>
-  </div>
-
   <div class="container">
-    <div class="status-header">
-      <p class="level-text">LEVEL: <span id="current-level">1</span></p>
-      <div class="general-rank">الرتبة العامة: <span id="overall-rank">F</span></div>
-      <div class="xp-container"><div id="xp-bar" class="xp-bar"></div></div>
-    </div>
+    <div id="sync-status" class="sync-text">جاري الاتصال بالسحابة...</div>
+    <div class="level-text">LEVEL: <span id="lvl">1</span></div>
+    <div style="font-size: 1.2em; margin-bottom: 20px;">الرتبة العامة: <span id="rank">F</span></div>
 
-    <div id="quest-box" class="quest-panel">
-      <div class="quest-title">
-        <span id="quest-header">المهمة اليومية: استعداد للقوة</span>
-        <span id="timer" class="timer">00:00:00</span>
-      </div>
-      <ul id="task-list" class="quest-list">
-        <li>ضغط (Push-ups): 50 مرة</li>
-        <li>معدة (Sit-ups): 50 مرة</li>
-        <li>سكوات (Squats): 50 مرة</li>
-        <li>جري (Running): 5 كم</li>
-      </ul>
-      <button id="complete-btn" class="btn btn-complete" onclick="completeQuest()">إتمام المهمة اليومية</button>
-    </div>
-
-    <div class="grid" id="grid-container"></div>
+    <div class="grid" id="stats-container"></div>
   </div>
 
   <script>
+    // ضع رابط Firebase الخاص بك هنا (الذي ينتهي بـ .firebaseio.com)
+    const DB_URL = "ضع_رابط_قاعدة_بياناتك_هنا"; 
+
     const properties = [
-      { key: "strength", name: "💪 القوة" },
-      { key: "agility", name: "🤸‍♂️ الرشاقة" },
-      { key: "vitality", name: "🔥 الحيوية" },
-      { key: "intelligence", name: "🧠 الذكاء" },
-      { key: "perception", name: "👁 الإدراك" }
+      { key: "str", name: "القوة" }, { key: "agi", name: "الرشاقة" },
+      { key: "vit", name: "الحيوية" }, { key: "int", name: "الذكاء" },
+      { key: "per", name: "الإدراك" }
     ];
 
-    const rankConfig = [
-      { min: 0,   label: "F",  color: "#00f9ff", shadow: "rgba(0, 249, 255, 0.5)" },
-      { min: 50,  label: "E",  color: "#00ff88", shadow: "rgba(0, 255, 136, 0.5)" },
-      { min: 100, label: "D",  color: "#a6ff00", shadow: "rgba(166, 255, 0, 0.5)" },
-      { min: 150, label: "C",  color: "#ffea00", shadow: "rgba(255, 234, 0, 0.5)" },
-      { min: 200, label: "B",  color: "#ff9900", shadow: "rgba(255, 153, 0, 0.5)" },
-      { min: 250, label: "A",  color: "#ff4400", shadow: "rgba(255, 68, 0, 0.5)" },
-      { min: 300, label: "S",  color: "#ff0000", shadow: "rgba(255, 0, 0, 0.5)" },
-      { min: 400, label: "S+", color: "#ffffff", shadow: "rgba(255, 255, 255, 0.8)" }
-    ];
-
-    function getRankInfo(points) {
-      let current = rankConfig[0];
-      for (let i = 0; i < rankConfig.length; i++) {
-        if (points >= rankConfig[i].min) {
-          current = rankConfig[i];
+    async function load() {
+      try {
+        const res = await fetch(`${DB_URL}/data.json`);
+        const cloudData = await res.json();
+        if(cloudData) {
+          Object.keys(cloudData).forEach(k => localStorage.setItem(k, cloudData[k]));
+          document.getElementById('sync-status').textContent = "متصل بالسحابة ✓";
         }
-      }
-      return current;
+        render();
+      } catch(e) { document.getElementById('sync-status').textContent = "وضع الأوفلاين"; render(); }
     }
 
-    function closeModal() {
-      const modal = document.getElementById('welcome-modal');
-      modal.style.opacity = '0';
-      setTimeout(() => { modal.style.display = 'none'; }, 800);
+    async function save(key, val) {
+      localStorage.setItem(key, val);
+      render();
+      await fetch(`${DB_URL}/data/${key}.json`, { method: 'PUT', body: JSON.stringify(val) });
     }
 
-    function updateStats() {
-      let totalPoints = 0;
+    function render() {
+      const container = document.getElementById('stats-container');
+      container.innerHTML = '';
+      let total = 0;
       properties.forEach(p => {
-        const pts = parseInt(localStorage.getItem(p.key)) || 0;
-        totalPoints += pts;
-        
-        const rankInfo = getRankInfo(pts);
-        const rankDisplay = document.getElementById(`${p.key}-rank`);
-        const pointsDisplay = document.getElementById(`${p.key}-val`);
-        const card = document.getElementById(`${p.key}-card`);
-        
-        if(rankDisplay) {
-          rankDisplay.textContent = rankInfo.label;
-          rankDisplay.style.color = rankInfo.color;
-          card.style.borderColor = rankInfo.color;
-          card.style.boxShadow = `0 4px 20px ${rankInfo.shadow}`;
-        }
-        if(pointsDisplay) pointsDisplay.textContent = pts;
-      });
-
-      let level = Math.floor(totalPoints / 14.4) + 1;
-      document.getElementById("current-level").textContent = level;
-
-      let xpPercent = ((totalPoints % 14.4) / 14.4) * 100;
-      document.getElementById("xp-bar").style.width = xpPercent + "%";
-
-      const overallRanks = ["F", "E", "D", "C", "B", "A", "S"];
-      let rankIndex = Math.min(Math.floor(totalPoints / 240), overallRanks.length - 1);
-      document.getElementById("overall-rank").textContent = overallRanks[rankIndex];
-    }
-
-    function changePoints(key, amount) {
-      let p = (parseInt(localStorage.getItem(key)) || 0) + amount;
-      if (p < 0) p = 0;
-      localStorage.setItem(key, p);
-      updateStats();
-    }
-
-    function updateTimer() {
-      const now = new Date();
-      const midnight = new Date(); midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
-      if (diff <= 0) { checkPenalty(); return; }
-      const h = Math.floor((diff / 3600000) % 24);
-      const m = Math.floor((diff / 60000) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-      document.getElementById("timer").textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-
-    function completeQuest() {
-      localStorage.setItem("lastCompletionDate", new Date().toDateString());
-      alert("تم إنجاز مهمة اليوم بنجاح!");
-      location.reload();
-    }
-
-    function init() {
-      const grid = document.getElementById("grid-container");
-      grid.innerHTML = "";
-      properties.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "category";
-        card.id = `${p.key}-card`;
-        card.innerHTML = `
-          <div class="category-title">${p.name}</div>
-          <div id="${p.key}-rank" class="stat-rank-display">-</div>
-          <div class="category-points">نقاط الخبرة: <span id="${p.key}-val">0</span></div>
-          <button class="btn" onclick="changePoints('${p.key}', 1)">+</button>
-          <button class="btn" onclick="changePoints('${p.key}', -1)">-</button>
+        const val = parseInt(localStorage.getItem(p.key)) || 0;
+        total += val;
+        container.innerHTML += `
+          <div class="category">
+            <div>${p.name}</div>
+            <div class="stat-rank">${val}</div>
+            <button class="btn" onclick="updateStat('${p.key}', 1)">+</button>
+            <button class="btn" onclick="updateStat('${p.key}', -1)">-</button>
+          </div>
         `;
-        grid.appendChild(card);
       });
-
-      if(localStorage.getItem("lastCompletionDate") === new Date().toDateString()) {
-        const btn = document.getElementById("complete-btn");
-        if(btn) {
-          btn.disabled = true;
-          btn.textContent = "تم الإنجاز";
-          document.getElementById("quest-box").style.opacity = "0.5";
-        }
-      }
-
-      updateStats();
-      setInterval(updateTimer, 1000);
-      updateTimer();
+      document.getElementById('lvl').textContent = Math.floor(total / 10) + 1;
     }
 
-    window.onload = init;
+    function updateStat(k, a) {
+      let v = (parseInt(localStorage.getItem(k)) || 0) + a;
+      save(k, Math.max(0, v));
+    }
+
+    window.onload = load;
   </script>
 </body>
 </html>
