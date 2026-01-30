@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الارتقاء الذاتي</title>
+    <title>نظام الارتقاء الذاتي | القوة الكاملة</title>
     <style>
         body { background: radial-gradient(circle at center, #001529, #000000); color: white; font-family: 'Segoe UI', sans-serif; direction: rtl; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; margin-top: 30px; }
+        .header { text-align: center; margin-top: 20px; width: 100%; }
         .lvl-text { font-size: 3.5rem; font-weight: 900; color: #00f9ff; text-shadow: 0 0 20px #00f9ff; margin: 0; }
-        .rank-text { font-size: 1.5rem; margin-top: 10px; border-bottom: 2px solid #00f9ff; display: inline-block; padding: 0 20px; }
-        .daily-mission { background: rgba(0, 0, 0, 0.7); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; margin: 30px 0; box-shadow: 0 0 15px #00f9ff66; position: relative; }
-        .mission-title { color: #00f9ff; border-bottom: 1px solid #00f9ff44; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        .mission-item { display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.95rem; color: #fff; }
+        .rank-text { font-size: 1.2rem; color: #aaa; margin-bottom: 10px; }
+        
+        /* شريط المستوى الرقمي */
+        .lvl-progress-container { width: 80%; max-width: 600px; height: 12px; background: rgba(0,0,0,0.5); border: 1px solid #00f9ff; border-radius: 10px; margin: 10px auto; overflow: hidden; box-shadow: 0 0 10px #00f9ff44; }
+        .lvl-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00f9ff, #bc00ff); box-shadow: 0 0 15px #00f9ff; transition: width 0.5s ease; }
+
+        .daily-mission { background: rgba(0, 0, 0, 0.7); border: 2px solid #00f9ff; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; margin: 20px 0; box-shadow: 0 0 15px #00f9ff66; position: relative; }
+        .mission-title { color: #00f9ff; border-bottom: 1px solid #00f9ff44; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; }
+        .mission-item { display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.95rem; }
         .complete-btn { background: #00ff88; color: black; border: none; border-radius: 10px; width: 100%; padding: 12px; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .stats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 95%; max-width: 1000px; padding-bottom: 50px; }
-        .stat-card { background: rgba(0, 0, 0, 0.8); border: 2px solid #00f9ff; border-radius: 12px; padding: 20px; width: 160px; text-align: center; box-shadow: 0 0 15px #00f9ff44; }
-        .stat-name { font-size: 1.1rem; margin-bottom: 10px; }
-        .stat-rank { font-size: 2.2rem; font-weight: bold; color: #00f9ff; margin: 5px 0; }
-        .exp-text { font-size: 0.8rem; color: #ccc; margin-bottom: 15px; }
-        .btn-group { display: flex; justify-content: center; gap: 8px; }
-        .btn { background: #00f9ff; color: black; border: none; border-radius: 5px; width: 35px; height: 35px; font-weight: bold; cursor: pointer; font-size: 1.2rem; box-shadow: 0 0 10px #00f9ffaa; }
-        .sync-tag { font-size: 0.6rem; color: #ffcc00; position: absolute; top: 5px; left: 5px; }
+
+        .stats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 95%; max-width: 1000px; padding-bottom: 40px; }
+        .stat-card { background: rgba(0, 0, 0, 0.8); border: 2px solid #00f9ff; border-radius: 12px; padding: 15px; width: 150px; text-align: center; box-shadow: 0 0 10px #00f9ff33; }
+        .stat-rank { font-size: 2rem; font-weight: bold; color: #00f9ff; margin: 5px 0; }
+        .exp-text { font-size: 0.75rem; color: #ccc; margin-bottom: 10px; }
+        .btn-group { display: flex; justify-content: center; gap: 5px; }
+        .btn { background: #00f9ff; color: black; border: none; border-radius: 5px; width: 30px; height: 30px; font-weight: bold; cursor: pointer; }
+        #timer { color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -28,11 +33,16 @@
     <div class="header">
         <h1 class="lvl-text">LEVEL: <span id="main-lvl">1</span></h1>
         <div class="rank-text">الرتبة العامة: F</div>
+        <div class="lvl-progress-container">
+            <div id="lvl-bar" class="lvl-progress-bar"></div>
+        </div>
     </div>
 
     <div class="daily-mission">
-        <div class="sync-tag" id="sync-status">أوفلاين</div>
-        <div class="mission-title"><span>08:00:00</span> <span>المهمة اليومية: استعداد للقوة</span></div>
+        <div class="mission-title">
+            <span id="timer">00:00:00</span>
+            <span>المهمة اليومية: استعداد للقوة</span>
+        </div>
         <div class="mission-item"><span>▶ ضغط (Push-ups): 50 مرة</span></div>
         <div class="mission-item"><span>▶ معدة (Sit-ups): 50 مرة</span></div>
         <div class="mission-item"><span>▶ سكوات (Squats): 50 مرة</span></div>
@@ -43,8 +53,8 @@
     <div class="stats-grid" id="grid"></div>
 
     <script>
-        // ضع رابط Firebase هنا فقط
-        const FIREBASE_URL = "https://mysystem-xxxx.firebaseio.com/.json"; 
+        // ضع رابط Firebase هنا للمزامنة
+        const FIREBASE_URL = "https://your-project.firebaseio.com/.json"; 
 
         const statConfigs = [
             { key: 'str', name: '💪 القوة' },
@@ -54,15 +64,27 @@
             { key: 'per', name: '👁️ الإدراك' }
         ];
 
+        function updateTimer() {
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight - now;
+            const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+        }
+
         async function init() {
+            setInterval(updateTimer, 1000);
+            updateTimer();
             try {
-                const res = await fetch(FIREBASE_URL);
-                const data = await res.json();
-                if (data) {
-                    Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
-                    document.getElementById('sync-status').innerText = "متصل سحابياً ✓";
+                if(FIREBASE_URL.includes("http")) {
+                    const res = await fetch(FIREBASE_URL);
+                    const data = await res.json();
+                    if (data) Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
                 }
-            } catch (e) { console.log("Offline mode"); }
+            } catch (e) {}
             render();
         }
 
@@ -70,28 +92,37 @@
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             let total = 0;
+
             statConfigs.forEach(s => {
                 const val = parseInt(localStorage.getItem(s.key)) || 0;
                 total += val;
                 grid.innerHTML += `
                     <div class="stat-card">
-                        <div class="stat-name">${s.name}</div>
+                        <div class="stat-name" style="font-size:0.9rem">${s.name}</div>
                         <div class="stat-rank">F</div>
-                        <div class="exp-text">نقاط الخبرة: ${val}</div>
+                        <div class="exp-text">النقاط: ${val}</div>
                         <div class="btn-group">
                             <button class="btn" onclick="change('${s.key}', -1)">-</button>
                             <button class="btn" onclick="change('${s.key}', 1)">+</button>
                         </div>
                     </div>`;
             });
-            document.getElementById('main-lvl').innerText = Math.floor(total / 10) + 1;
+
+            // حساب المستوى والشريط
+            const lvl = Math.floor(total / 14.4) + 1;
+            const progress = ((total % 14.4) / 14.4) * 100;
+            
+            document.getElementById('main-lvl').innerText = lvl;
+            document.getElementById('lvl-bar').style.width = progress + "%";
         }
 
         function change(key, amt) {
             let v = Math.max(0, (parseInt(localStorage.getItem(key)) || 0) + amt);
             localStorage.setItem(key, v);
             render();
-            fetch(FIREBASE_URL.replace('.json', `/${key}.json`), { method: 'PUT', body: JSON.stringify(v) });
+            if(FIREBASE_URL.includes("http")) {
+                fetch(FIREBASE_URL.replace('.json', `/${key}.json`), { method: 'PUT', body: JSON.stringify(v) });
+            }
         }
         window.onload = init;
     </script>
